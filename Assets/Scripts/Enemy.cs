@@ -131,12 +131,128 @@ public class Enemy : MonoBehaviour
     // TODO: Enemy chases the player when it is nearby
     private void HandleEnemyBehavior2()
     {
-        
+        // Finds the player GameObject using its tag
+        GameObject playerObject = GameObject.FindWithTag("Player");
+
+        switch (state)
+        {
+            case EnemyState.DEFAULT: // Generates a random path or chase the player if in range
+                material.color = Color.white;
+
+                if (playerObject != null && Vector3.Distance(transform.position, playerObject.transform.position) <= visionDistance)
+                {
+                    // Get the Player component from the GameObject
+                    Player player = playerObject.GetComponent<Player>();
+
+                    // If the player is within vision distance, set the last known tile of the player as the target
+                    Tile playerLastTile = player.currentTile; // Ensure the Player class has 'currentTile' defined
+
+                    // Use the pathfinder to find the path to the player's last known tile
+                    path = pathFinder.FindPathAStar(currentTile, playerLastTile);
+
+                    if (path.Count > 0)
+                    {
+                        // Set the first tile in the path as the target and move towards it
+                        targetTile = path.Dequeue();
+                        state = EnemyState.MOVING;
+                    }
+                }
+                else
+                {
+                    // If player is not in range, move randomly
+                    if (path.Count <= 0)
+                    {
+                        path = pathFinder.RandomPath(currentTile, 20); // Use a step count for random pathfinding
+                    }
+
+                    if (path.Count > 0)
+                    {
+                        targetTile = path.Dequeue();
+                        state = EnemyState.MOVING;
+                    }
+                }
+                break;
+
+            case EnemyState.MOVING:
+                // Move towards the target tile
+                velocity = targetTile.transform.position - transform.position;
+                transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+
+                // If target tile is reached, update the current tile
+                if (Vector3.Distance(transform.position, targetTile.transform.position) <= 0.05f)
+                {
+                    currentTile = targetTile;
+                    state = EnemyState.DEFAULT;
+                }
+                break;
+
+            default:
+                state = EnemyState.DEFAULT;
+                break;
+        }
     }
 
     // TODO: Third behavior (Describe what it does)
     private void HandleEnemyBehavior3()
     {
+        // Finds the player GameObject using its tag
+        GameObject playerObject = GameObject.FindWithTag("Player");
 
+        switch (state)
+        {
+            case EnemyState.DEFAULT: // Generates a random path or chase the player if in range
+                material.color = Color.white; 
+
+                if (playerObject != null && Vector3.Distance(transform.position, playerObject.transform.position) <= visionDistance)
+                {
+                    // Get the Player component from the GameObject
+                    Player player = playerObject.GetComponent<Player>();
+
+                    // If the player is within vision distance, set the last known tile of the player as the target
+                    Tile playerLastTile = player.currentTile; // Ensure the Player class has 'currentTile' defined
+                 
+                    // Use the pathfinder to find the path to the player's last known tile
+                    path = pathFinder.FindPathAStar(currentTile, playerLastTile);
+
+                    if (path.Count > 0)
+                    {
+                        // Set the first tile in the path as the target and move towards it
+                        targetTile = path.Dequeue();
+                        state = EnemyState.MOVING;
+                    }
+                }
+                else
+                {
+                    // If player is not in range, move randomly
+                    if (path.Count <= 0)
+                    {
+                        path = pathFinder.RandomPath(currentTile, 20); // Use a step count for random pathfinding
+                    }
+
+                    if (path.Count > 0)
+                    {
+                        targetTile = path.Dequeue();
+                        state = EnemyState.MOVING;
+                    }
+                }
+                break;
+
+            case EnemyState.MOVING:
+                // Move towards the target tile
+                velocity = targetTile.transform.position - transform.position;
+                transform.position = transform.position + (velocity.normalized * speed) * Time.deltaTime;
+
+                // If target tile is reached, update the current tile
+                if (Vector3.Distance(transform.position, targetTile.transform.position) <= 0.05f)
+                {
+                    currentTile = targetTile;
+                    state = EnemyState.DEFAULT;
+                }
+                break;
+
+            default:
+                state = EnemyState.DEFAULT;
+                break;
+        }
     }
 }
